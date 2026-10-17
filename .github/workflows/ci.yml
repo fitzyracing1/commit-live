@@ -2,7 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # try/** so throwaway branches get a light without opening a PR
+    branches: [main, 'try/**']
   pull_request:
 
 permissions:
@@ -27,6 +28,26 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm test
+
+  services-dry-run:
+    name: service launch (dry run, mock host)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      # in-memory GitHub + mock host: no secrets, no deployments written, nothing launched
+      - run: node src/services/cli.mjs demo
+      - run: node src/services/cli.mjs launch --sha "$GITHUB_SHA" --light lit --host mock --dry-run
+      - name: railway adapter plans its calls without sending them
+        env:
+          RAILWAY_PROJECT_ID: dry-project
+          RAILWAY_SERVICE_ID: dry-service
+          RAILWAY_LIVE_ENVIRONMENT_ID: dry-live
+          RAILWAY_LIVE_URL: https://dry.invalid/
+        run: node src/services/cli.mjs launch --sha "$GITHUB_SHA" --light lit --host railway --dry-run
 
   uniform:
     name: uniform style
