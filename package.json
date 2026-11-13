@@ -18,5 +18,9 @@
   },
   "dependencies": {
     "@fitzyracing1/light-core": "git+https://github.com/fitzyracing1/light-core.git#v0.1.0"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/fitzyracing1"
   }
 }
